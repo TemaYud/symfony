@@ -25,6 +25,21 @@ class FileLinkFormatterTest extends TestCase
         $this->assertFalse($sut->format('/kernel/root/src/my/very/best/file.php', 3));
     }
 
+    public function testAfterUnserialize()
+    {
+        $ide = $_ENV['SYMFONY_IDE'] ?? $_SERVER['SYMFONY_IDE'] ?? null;
+        $_ENV['SYMFONY_IDE'] = $_SERVER['SYMFONY_IDE'] = null;
+        $sut = unserialize(serialize(new FileLinkFormatter()));
+
+        $this->assertFalse($sut->format('/kernel/root/src/my/very/best/file.php', 3));
+
+        if (null === $ide) {
+            unset($_ENV['SYMFONY_IDE'], $_SERVER['SYMFONY_IDE']);
+        } else {
+            $_ENV['SYMFONY_IDE'] = $_SERVER['SYMFONY_IDE'] = $ide;
+        }
+    }
+
     public function testWhenFileLinkFormatAndNoRequest()
     {
         $file = __DIR__.\DIRECTORY_SEPARATOR.'file.php';
@@ -59,5 +74,10 @@ class FileLinkFormatterTest extends TestCase
         $sut = new FileLinkFormatter('atom');
 
         $this->assertSame("atom://core/open/file?filename=$file&line=3", $sut->format($file, 3));
+    }
+
+    public function testSerialize()
+    {
+        $this->assertInstanceOf(FileLinkFormatter::class, unserialize(serialize(new FileLinkFormatter())));
     }
 }

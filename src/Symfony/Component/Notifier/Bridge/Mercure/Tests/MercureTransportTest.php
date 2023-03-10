@@ -27,7 +27,6 @@ use Symfony\Component\Notifier\Message\MessageOptionsInterface;
 use Symfony\Component\Notifier\Message\SmsMessage;
 use Symfony\Component\Notifier\Test\TransportTestCase;
 use Symfony\Component\Notifier\Tests\Transport\DummyMessage;
-use Symfony\Component\Notifier\Transport\TransportInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
@@ -35,9 +34,9 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 final class MercureTransportTest extends TransportTestCase
 {
-    public static function createTransport(HttpClientInterface $client = null, HubInterface $hub = null, string $hubId = 'hubId', $topics = null): TransportInterface
+    public static function createTransport(HttpClientInterface $client = null, HubInterface $hub = null, string $hubId = 'hubId', $topics = null): MercureTransport
     {
-        $hub = $hub ?? new DummyHub();
+        $hub ??= new DummyHub();
 
         return new MercureTransport($hub, $hubId, $topics);
     }

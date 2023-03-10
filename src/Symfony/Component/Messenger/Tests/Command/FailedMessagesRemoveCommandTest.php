@@ -23,26 +23,6 @@ use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
 
 class FailedMessagesRemoveCommandTest extends TestCase
 {
-    /**
-     * @group legacy
-     */
-    public function testRemoveSingleMessage()
-    {
-        $receiver = $this->createMock(ListableReceiverInterface::class);
-        $receiver->expects($this->once())->method('find')->with(20)->willReturn(new Envelope(new \stdClass()));
-
-        $command = new FailedMessagesRemoveCommand(
-            'failure_receiver',
-            $receiver
-        );
-
-        $tester = new CommandTester($command);
-        $tester->execute(['id' => 20, '--force' => true]);
-
-        $this->assertStringContainsString('Failed Message Details', $tester->getDisplay());
-        $this->assertStringContainsString('Message with id 20 removed.', $tester->getDisplay());
-    }
-
     public function testRemoveSingleMessageWithServiceLocator()
     {
         $globalFailureReceiverName = 'failure_receiver';
@@ -59,26 +39,6 @@ class FailedMessagesRemoveCommandTest extends TestCase
 
         $tester = new CommandTester($command);
         $tester->execute(['id' => 20, '--force' => true]);
-
-        $this->assertStringContainsString('Failed Message Details', $tester->getDisplay());
-        $this->assertStringContainsString('Message with id 20 removed.', $tester->getDisplay());
-    }
-
-    /**
-     * @group legacy
-     */
-    public function testRemoveUniqueMessage()
-    {
-        $receiver = $this->createMock(ListableReceiverInterface::class);
-        $receiver->expects($this->once())->method('find')->with(20)->willReturn(new Envelope(new \stdClass()));
-
-        $command = new FailedMessagesRemoveCommand(
-            'failure_receiver',
-            $receiver
-        );
-
-        $tester = new CommandTester($command);
-        $tester->execute(['id' => [20], '--force' => true]);
 
         $this->assertStringContainsString('Failed Message Details', $tester->getDisplay());
         $this->assertStringContainsString('Message with id 20 removed.', $tester->getDisplay());
@@ -126,27 +86,6 @@ class FailedMessagesRemoveCommandTest extends TestCase
         $this->assertStringContainsString('Message with id 20 removed.', $tester->getDisplay());
     }
 
-    /**
-     * @group legacy
-     */
-    public function testThrowExceptionIfFailureTransportNotDefined()
-    {
-        $failureReceiverName = 'failure_receiver';
-        $receiver = $this->createMock(ListableReceiverInterface::class);
-
-        $this->expectException(InvalidArgumentException::class);
-        $command = new FailedMessagesRemoveCommand(
-            null,
-            $receiver
-        );
-
-        $tester = new CommandTester($command);
-        $tester->execute(['id' => [20], '--transport' => $failureReceiverName, '--force' => true]);
-
-        $this->assertStringContainsString('Failed Message Details', $tester->getDisplay());
-        $this->assertStringContainsString('Message with id 20 removed.', $tester->getDisplay());
-    }
-
     public function testThrowExceptionIfFailureTransportNotDefinedWithServiceLocator()
     {
         $failureReceiverName = 'failure_receiver';
@@ -165,42 +104,6 @@ class FailedMessagesRemoveCommandTest extends TestCase
 
         $this->assertStringContainsString('Failed Message Details', $tester->getDisplay());
         $this->assertStringContainsString('Message with id 20 removed.', $tester->getDisplay());
-    }
-
-    /**
-     * @group legacy
-     */
-    public function testRemoveMultipleMessages()
-    {
-        $receiver = $this->createMock(ListableReceiverInterface::class);
-
-        $series = [
-            [[20], new Envelope(new \stdClass())],
-            [[30], null],
-            [[40], new Envelope(new \stdClass())],
-        ];
-
-        $receiver->expects($this->exactly(3))->method('find')
-            ->willReturnCallback(function (...$args) use (&$series) {
-                [$expectedArgs, $return] = array_shift($series);
-                $this->assertSame($expectedArgs, $args);
-
-                return $return;
-            })
-        ;
-
-        $command = new FailedMessagesRemoveCommand(
-            'failure_receiver',
-            $receiver
-        );
-
-        $tester = new CommandTester($command);
-        $tester->execute(['id' => [20, 30, 40], '--force' => true]);
-
-        $this->assertStringNotContainsString('Failed Message Details', $tester->getDisplay());
-        $this->assertStringContainsString('Message with id 20 removed.', $tester->getDisplay());
-        $this->assertStringContainsString('The message with id "30" was not found.', $tester->getDisplay());
-        $this->assertStringContainsString('Message with id 40 removed.', $tester->getDisplay());
     }
 
     public function testRemoveMultipleMessagesWithServiceLocator()
@@ -239,40 +142,6 @@ class FailedMessagesRemoveCommandTest extends TestCase
         $this->assertStringContainsString('Message with id 20 removed.', $tester->getDisplay());
         $this->assertStringContainsString('The message with id "30" was not found.', $tester->getDisplay());
         $this->assertStringContainsString('Message with id 40 removed.', $tester->getDisplay());
-    }
-
-    /**
-     * @group legacy
-     */
-    public function testRemoveMultipleMessagesAndDisplayMessages()
-    {
-        $receiver = $this->createMock(ListableReceiverInterface::class);
-
-        $series = [
-            [[20], new Envelope(new \stdClass())],
-            [[30], new Envelope(new \stdClass())],
-        ];
-
-        $receiver->expects($this->exactly(2))->method('find')
-            ->willReturnCallback(function (...$args) use (&$series) {
-                [$expectedArgs, $return] = array_shift($series);
-                $this->assertSame($expectedArgs, $args);
-
-                return $return;
-            })
-        ;
-
-        $command = new FailedMessagesRemoveCommand(
-            'failure_receiver',
-            $receiver
-        );
-
-        $tester = new CommandTester($command);
-        $tester->execute(['id' => [20, 30], '--force' => true, '--show-messages' => true]);
-
-        $this->assertStringContainsString('Failed Message Details', $tester->getDisplay());
-        $this->assertStringContainsString('Message with id 20 removed.', $tester->getDisplay());
-        $this->assertStringContainsString('Message with id 30 removed.', $tester->getDisplay());
     }
 
     public function testRemoveMultipleMessagesAndDisplayMessagesWithServiceLocator()

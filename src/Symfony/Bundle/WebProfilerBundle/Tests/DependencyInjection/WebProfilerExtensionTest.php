@@ -34,12 +34,12 @@ class WebProfilerExtensionTest extends TestCase
      */
     private $container;
 
-    public static function assertSaneContainer(Container $container, $message = '', $knownPrivates = [])
+    public static function assertSaneContainer(Container $container)
     {
+        $removedIds = $container->getRemovedIds();
         $errors = [];
-        $knownPrivates[] = 'debug.file_link_formatter.url_format';
         foreach ($container->getServiceIds() as $id) {
-            if (\in_array($id, $knownPrivates, true)) { // for BC with 3.4
+            if (isset($removedIds[$id])) {
                 continue;
             }
             try {
@@ -49,7 +49,7 @@ class WebProfilerExtensionTest extends TestCase
             }
         }
 
-        self::assertEquals([], $errors, $message);
+        self::assertSame([], $errors);
     }
 
     protected function setUp(): void
@@ -66,7 +66,7 @@ class WebProfilerExtensionTest extends TestCase
         $this->container->register('data_collector.dump', DumpDataCollector::class)->setPublic(true);
         $this->container->register('error_handler.error_renderer.html', HtmlErrorRenderer::class)->setPublic(true);
         $this->container->register('event_dispatcher', EventDispatcher::class)->setPublic(true);
-        $this->container->register('router', \get_class($router))->setPublic(true);
+        $this->container->register('router', $router::class)->setPublic(true);
         $this->container->register('twig', 'Twig\Environment')->setPublic(true);
         $this->container->register('twig_loader', 'Twig\Loader\ArrayLoader')->addArgument([])->setPublic(true);
         $this->container->register('twig', 'Twig\Environment')->addArgument(new Reference('twig_loader'))->setPublic(true);
@@ -78,9 +78,9 @@ class WebProfilerExtensionTest extends TestCase
         $this->container->setParameter('kernel.charset', 'UTF-8');
         $this->container->setParameter('debug.file_link_format', null);
         $this->container->setParameter('profiler.class', ['Symfony\\Component\\HttpKernel\\Profiler\\Profiler']);
-        $this->container->register('profiler', \get_class($profiler))
+        $this->container->register('profiler', $profiler::class)
             ->setPublic(true)
-            ->addArgument(new Definition(\get_class($profilerStorage)));
+            ->addArgument(new Definition($profilerStorage::class));
         $this->container->setParameter('data_collector.templates', []);
         $this->container->set('kernel', $this->kernel);
         $this->container->addCompilerPass(new RegisterListenersPass());
@@ -129,7 +129,7 @@ class WebProfilerExtensionTest extends TestCase
 
         $this->assertSame($listenerInjected, $this->container->has('web_profiler.debug_toolbar'));
 
-        self::assertSaneContainer($this->getCompiledContainer(), '', ['web_profiler.csp.handler']);
+        self::assertSaneContainer($this->getCompiledContainer());
 
         if ($listenerInjected) {
             $this->assertSame($listenerEnabled, $this->container->get('web_profiler.debug_toolbar')->isEnabled());
@@ -170,7 +170,7 @@ class WebProfilerExtensionTest extends TestCase
 
         $this->assertSame($listenerInjected, $this->container->has('web_profiler.debug_toolbar'));
 
-        self::assertSaneContainer($this->getCompiledContainer(), '', ['web_profiler.csp.handler']);
+        self::assertSaneContainer($this->getCompiledContainer());
 
         if ($listenerInjected) {
             $this->assertSame($listenerEnabled, $this->container->get('web_profiler.debug_toolbar')->isEnabled());

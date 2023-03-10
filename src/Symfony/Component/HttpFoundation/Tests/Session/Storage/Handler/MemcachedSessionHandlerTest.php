@@ -152,7 +152,7 @@ class MemcachedSessionHandlerTest extends TestCase
         return [
             [['prefix' => 'session'], true],
             [['expiretime' => 100], true],
-            [['prefix' => 'session', 'expiretime' => 200], true],
+            [['prefix' => 'session', 'ttl' => 200], true],
             [['expiretime' => 100, 'foo' => 'bar'], false],
         ];
     }
@@ -160,7 +160,6 @@ class MemcachedSessionHandlerTest extends TestCase
     public function testGetConnection()
     {
         $method = new \ReflectionMethod($this->storage, 'getMemcached');
-        $method->setAccessible(true);
 
         $this->assertInstanceOf(\Memcached::class, $method->invoke($this->storage));
     }

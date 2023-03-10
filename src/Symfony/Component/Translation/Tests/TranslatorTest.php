@@ -19,6 +19,7 @@ use Symfony\Component\Translation\Formatter\IntlFormatterInterface;
 use Symfony\Component\Translation\Formatter\MessageFormatter;
 use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Component\Translation\MessageCatalogue;
+use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Component\Translation\Translator;
 
 class TranslatorTest extends TestCase
@@ -469,11 +470,14 @@ class TranslatorTest extends TestCase
         ];
     }
 
-    public static function getTransTests()
+    public static function getTransTests(): iterable
     {
+        $param = new TranslatableMessage('Symfony is %what%!', ['%what%' => 'awesome'], '');
+
         return [
             ['Symfony est super !', 'Symfony is great!', 'Symfony est super !', [], 'fr', ''],
             ['Symfony est awesome !', 'Symfony is %what%!', 'Symfony est %what% !', ['%what%' => 'awesome'], 'fr', ''],
+            ['Symfony est Symfony est awesome ! !', 'Symfony is %what%!', 'Symfony est %what% !', ['%what%' => $param], 'fr', ''],
             ['Symfony est super !', new StringClass('Symfony is great!'), 'Symfony est super !', [], 'fr', ''],
             ['', null, '', [], 'fr', ''],
         ];

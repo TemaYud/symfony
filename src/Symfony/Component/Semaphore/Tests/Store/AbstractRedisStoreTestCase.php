@@ -19,16 +19,8 @@ use Symfony\Component\Semaphore\Store\RedisStore;
  */
 abstract class AbstractRedisStoreTestCase extends AbstractStoreTestCase
 {
-    /**
-     * Return a RedisConnection.
-     *
-     * @return \Redis|\RedisArray|\RedisCluster|\Predis\ClientInterface
-     */
-    abstract protected function getRedisConnection(): object;
+    abstract protected function getRedisConnection(): \Redis|\RedisArray|\RedisCluster|\Predis\ClientInterface;
 
-    /**
-     * {@inheritdoc}
-     */
     public function getStore(): PersistingStoreInterface
     {
         return new RedisStore($this->getRedisConnection());

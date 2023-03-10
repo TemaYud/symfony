@@ -22,18 +22,12 @@ class CustomNormalizer implements NormalizerInterface, DenormalizerInterface, Se
     use ObjectToPopulateTrait;
     use SerializerAwareTrait;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function normalize($object, string $format = null, array $context = [])
+    public function normalize(mixed $object, string $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
     {
         return $object->normalize($this->serializer, $format, $context);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function denormalize($data, string $type, string $format = null, array $context = [])
+    public function denormalize(mixed $data, string $type, string $format = null, array $context = []): mixed
     {
         $object = $this->extractObjectToPopulate($type, $context) ?? new $type();
         $object->denormalize($this->serializer, $data, $format, $context);
@@ -46,10 +40,9 @@ class CustomNormalizer implements NormalizerInterface, DenormalizerInterface, Se
      *
      * @param mixed       $data   Data to normalize
      * @param string|null $format The format being (de-)serialized from or into
-     *
-     * @return bool
+     * @param array       $context
      */
-    public function supportsNormalization($data, string $format = null)
+    public function supportsNormalization(mixed $data, string $format = null /* , array $context = [] */): bool
     {
         return $data instanceof NormalizableInterface;
     }
@@ -60,17 +53,13 @@ class CustomNormalizer implements NormalizerInterface, DenormalizerInterface, Se
      * @param mixed       $data   Data to denormalize from
      * @param string      $type   The class to which the data should be denormalized
      * @param string|null $format The format being deserialized from
-     *
-     * @return bool
+     * @param array       $context
      */
-    public function supportsDenormalization($data, string $type, string $format = null)
+    public function supportsDenormalization(mixed $data, string $type, string $format = null /* , array $context = [] */): bool
     {
         return is_subclass_of($type, DenormalizableInterface::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function hasCacheableSupportsMethod(): bool
     {
         return __CLASS__ === static::class;

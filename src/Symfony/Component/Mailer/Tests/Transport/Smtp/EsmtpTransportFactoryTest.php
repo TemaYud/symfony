@@ -118,6 +118,14 @@ class EsmtpTransportFactoryTest extends TransportFactoryTestCase
         ];
 
         $transport = new EsmtpTransport('example.com', 465, true, null, $logger);
+        $transport->setMaxPerSecond(2.0);
+
+        yield [
+            new Dsn('smtps', 'example.com', '', '', 465, ['max_per_second' => '2']),
+            $transport,
+        ];
+
+        $transport = new EsmtpTransport('example.com', 465, true, null, $logger);
         $transport->setRestartThreshold(10, 1);
 
         yield [

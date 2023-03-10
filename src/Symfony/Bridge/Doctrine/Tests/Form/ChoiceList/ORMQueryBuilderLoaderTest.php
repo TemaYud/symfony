@@ -16,7 +16,6 @@ use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Types\GuidType;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\AbstractQuery;
-use Doctrine\ORM\Version;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\Form\ChoiceList\ORMQueryBuilderLoader;
 use Symfony\Bridge\Doctrine\Tests\DoctrineTestHelper;
@@ -228,12 +227,6 @@ class ORMQueryBuilderLoaderTest extends TestCase
 
     public function testEmbeddedIdentifierName()
     {
-        if (Version::compare('2.5.0') > 0) {
-            $this->markTestSkipped('Applicable only for Doctrine >= 2.5.0');
-
-            return;
-        }
-
         $em = DoctrineTestHelper::createTestEntityManager();
 
         $query = $this->getMockBuilder(QueryMock::class)

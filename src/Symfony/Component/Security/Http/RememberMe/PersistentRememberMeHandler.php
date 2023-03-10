@@ -32,10 +32,10 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
  */
 final class PersistentRememberMeHandler extends AbstractRememberMeHandler
 {
-    private $tokenProvider;
-    private $tokenVerifier;
+    private TokenProviderInterface $tokenProvider;
+    private ?TokenVerifierInterface $tokenVerifier;
 
-    public function __construct(TokenProviderInterface $tokenProvider, string $secret, UserProviderInterface $userProvider, RequestStack $requestStack, array $options, LoggerInterface $logger = null, TokenVerifierInterface $tokenVerifier = null)
+    public function __construct(TokenProviderInterface $tokenProvider, #[\SensitiveParameter] string $secret, UserProviderInterface $userProvider, RequestStack $requestStack, array $options, LoggerInterface $logger = null, TokenVerifierInterface $tokenVerifier = null)
     {
         parent::__construct($userProvider, $requestStack, $options, $logger);
 
@@ -46,15 +46,12 @@ final class PersistentRememberMeHandler extends AbstractRememberMeHandler
         $this->tokenVerifier = $tokenVerifier;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function createRememberMeCookie(UserInterface $user): void
     {
         $series = random_bytes(66);
         $tokenValue = strtr(base64_encode(substr($series, 33)), '+/=', '-_~');
         $series = strtr(base64_encode(substr($series, 0, 33)), '+/=', '-_~');
-        $token = new PersistentToken(\get_class($user), method_exists($user, 'getUserIdentifier') ? $user->getUserIdentifier() : $user->getUsername(), $series, $tokenValue, new \DateTime());
+        $token = new PersistentToken($user::class, $user->getUserIdentifier(), $series, $tokenValue, new \DateTime());
 
         $this->tokenProvider->createNewToken($token);
         $this->createCookie(RememberMeDetails::fromPersistentToken($token, time() + $this->options['lifetime']));
@@ -98,17 +95,12 @@ final class PersistentRememberMeHandler extends AbstractRememberMeHandler
 
         $tokenValue = strtr(base64_encode(random_bytes(33)), '+/=', '-_~');
         $tokenLastUsed = new \DateTime();
-        if ($this->tokenVerifier) {
-            $this->tokenVerifier->updateExistingToken($persistentToken, $tokenValue, $tokenLastUsed);
-        }
+        $this->tokenVerifier?->updateExistingToken($persistentToken, $tokenValue, $tokenLastUsed);
         $this->tokenProvider->updateToken($series, $tokenValue, $tokenLastUsed);
 
         $this->createCookie($rememberMeDetails->withValue($series.':'.$tokenValue));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function clearRememberMeCookie(): void
     {
         parent::clearRememberMeCookie();

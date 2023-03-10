@@ -23,9 +23,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class NumberType extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addViewTransformer(new NumberToLocalizedStringTransformer(
@@ -40,9 +37,6 @@ class NumberType extends AbstractType
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function buildView(FormView $view, FormInterface $form, array $options)
     {
         if ($options['html5']) {
@@ -51,12 +45,11 @@ class NumberType extends AbstractType
             if (!isset($view->vars['attr']['step'])) {
                 $view->vars['attr']['step'] = 'any';
             }
+        } else {
+            $view->vars['attr']['inputmode'] = 0 === $options['scale'] ? 'numeric' : 'decimal';
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
@@ -67,11 +60,7 @@ class NumberType extends AbstractType
             'compound' => false,
             'input' => 'number',
             'html5' => false,
-            'invalid_message' => function (Options $options, $previousValue) {
-                return ($options['legacy_error_messages'] ?? true)
-                    ? $previousValue
-                    : 'Please enter a number.';
-            },
+            'invalid_message' => 'Please enter a number.',
         ]);
 
         $resolver->setAllowedValues('rounding_mode', [
@@ -96,10 +85,7 @@ class NumberType extends AbstractType
         });
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'number';
     }

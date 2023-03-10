@@ -46,6 +46,7 @@ abstract class AnnotationClassLoaderTestCase extends TestCase
     public function testSupportsChecksTypeIfSpecified()
     {
         $this->assertTrue($this->loader->supports('class', 'annotation'), '->supports() checks the resource type if specified');
+        $this->assertTrue($this->loader->supports('class', 'attribute'), '->supports() checks the resource type if specified');
         $this->assertFalse($this->loader->supports('class', 'foo'), '->supports() checks the resource type if specified');
     }
 

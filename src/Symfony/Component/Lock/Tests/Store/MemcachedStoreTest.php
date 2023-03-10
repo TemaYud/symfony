@@ -30,8 +30,8 @@ class MemcachedStoreTest extends AbstractStoreTestCase
 
     public static function setUpBeforeClass(): void
     {
-        if (version_compare(phpversion('memcached'), \PHP_VERSION_ID >= 80100 ? '3.1.6' : '2.2.0', '<')) {
-            throw new SkippedTestSuiteError('Extension memcached '.(\PHP_VERSION_ID >= 80100 ? '> 3.1.5' : '>= 2.2.0').' required.');
+        if (version_compare(phpversion('memcached'), '3.1.6', '<')) {
+            throw new SkippedTestSuiteError('Extension memcached > 3.1.5 required.');
         }
 
         $memcached = new \Memcached();
@@ -44,17 +44,11 @@ class MemcachedStoreTest extends AbstractStoreTestCase
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function getClockDelay()
     {
         return 1000000;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getStore(): PersistingStoreInterface
     {
         $memcached = new \Memcached();

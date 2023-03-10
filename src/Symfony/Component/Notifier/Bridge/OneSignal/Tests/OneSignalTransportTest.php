@@ -21,7 +21,6 @@ use Symfony\Component\Notifier\Message\PushMessage;
 use Symfony\Component\Notifier\Message\SmsMessage;
 use Symfony\Component\Notifier\Test\TransportTestCase;
 use Symfony\Component\Notifier\Tests\Transport\DummyMessage;
-use Symfony\Component\Notifier\Transport\TransportInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
@@ -30,10 +29,7 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
  */
 final class OneSignalTransportTest extends TransportTestCase
 {
-    /**
-     * @return OneSignalTransport
-     */
-    public static function createTransport(HttpClientInterface $client = null, string $recipientId = null): TransportInterface
+    public static function createTransport(HttpClientInterface $client = null, string $recipientId = null): OneSignalTransport
     {
         return new OneSignalTransport('9fb175f0-0b32-4e99-ae97-bd228b9eb246', 'api_key', $recipientId, $client ?? new MockHttpClient());
     }

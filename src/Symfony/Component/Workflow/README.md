@@ -7,13 +7,16 @@ machine.
 Sponsor
 -------
 
-The Workflow component for Symfony 5.4/6.0 is [backed][1] by [ZEturf][2].
+The Workflow component for Symfony 6.2 is [backed][1] by [bitExpert][2].
 
-The ZEturf group is an online gaming operator licensed in 6 markets in Europe and
-Africa. It operates two brands, ZEturf on horse racing betting, and ZEbet on
-sports betting. In parallel with the development of its betting activities, the
-group is also investing in Entertainment / gaming with Free-to-Play and
-Play-to-Earn projects.
+Their pulse is cross-technology software development that beats with every line of code.
+The basic principle for their solutions, products, and services is innovation, quality,
+commitment, and professionalism.
+
+bitExpert actively supports Open-Source and the software development community through various
+activities: Contributing to the Open-Source projects they love, organizing & hosting meetups,
+speaking at conferences, and organizing unKonf - an unconference focused on web
+and software development practices.
 
 Help Symfony by [sponsoring][3] its development!
 
@@ -27,5 +30,5 @@ Resources
    in the [main Symfony repository](https://github.com/symfony/symfony)
 
 [1]: https://symfony.com/backers
-[2]: https://zeturf.com
+[2]: https://www.bitexpert.de
 [3]: https://symfony.com/sponsor

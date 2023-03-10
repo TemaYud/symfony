@@ -13,10 +13,12 @@ namespace Symfony\Component\Console\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\HelpCommand;
 use Symfony\Component\Console\Command\LazyCommand;
 use Symfony\Component\Console\Command\SignalableCommandInterface;
+use Symfony\Component\Console\CommandLoader\CommandLoaderInterface;
 use Symfony\Component\Console\CommandLoader\FactoryCommandLoader;
 use Symfony\Component\Console\DependencyInjection\AddConsoleCommandPass;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
@@ -246,7 +248,6 @@ class ApplicationTest extends TestCase
         // simulate --help
         $r = new \ReflectionObject($application);
         $p = $r->getProperty('wantHelps');
-        $p->setAccessible(true);
         $p->setValue($application, true);
         $command = $application->get('foo:bar');
         $this->assertInstanceOf(HelpCommand::class, $command, '->get() returns the help command if --help is provided as the input');
@@ -555,6 +556,22 @@ class ApplicationTest extends TestCase
             ['foo3:barr'],
             ['fooo3:bar'],
         ];
+    }
+
+    public function testRunNamespace()
+    {
+        putenv('COLUMNS=120');
+        $application = new Application();
+        $application->setAutoExit(false);
+        $application->add(new \FooCommand());
+        $application->add(new \Foo1Command());
+        $application->add(new \Foo2Command());
+        $tester = new ApplicationTester($application);
+        $tester->run(['command' => 'foo'], ['decorated' => false]);
+        $display = trim($tester->getDisplay(true));
+        $this->assertStringContainsString('Available commands for the "foo" namespace:', $display);
+        $this->assertStringContainsString('The foo:bar command', $display);
+        $this->assertStringContainsString('The foo:bar1 command', $display);
     }
 
     public function testFindAlternativeExceptionMessageMultiple()
@@ -1452,6 +1469,25 @@ class ApplicationTest extends TestCase
         }
     }
 
+    public function testRunWithFindError()
+    {
+        $this->expectException(\Error::class);
+        $this->expectExceptionMessage('Find exception');
+
+        $application = new Application();
+        $application->setAutoExit(false);
+        $application->setCatchExceptions(false);
+
+        // Throws an exception when find fails
+        $commandLoader = $this->createMock(CommandLoaderInterface::class);
+        $commandLoader->method('getNames')->willThrowException(new \Error('Find exception'));
+        $application->setCommandLoader($commandLoader);
+
+        // The exception should not be ignored
+        $tester = new ApplicationTester($application);
+        $tester->run(['command' => 'foo']);
+    }
+
     public function testRunAllowsErrorListenersToSilenceTheException()
     {
         $dispatcher = $this->getDispatcher();
@@ -2094,9 +2130,6 @@ class CustomApplication extends Application
 
 class CustomDefaultCommandApplication extends Application
 {
-    /**
-     * Overwrites the constructor in order to set a different default command.
-     */
     public function __construct()
     {
         parent::__construct();
@@ -2125,14 +2158,13 @@ class DisabledCommand extends Command
     }
 }
 
+#[AsCommand(name: 'signal')]
 class BaseSignableCommand extends Command
 {
     public $signaled = false;
     public $signalHandlers = [];
     public $loop = 1000;
     private $emitsSignal;
-
-    protected static $defaultName = 'signal';
 
     public function __construct(bool $emitsSignal = true)
     {
@@ -2157,10 +2189,9 @@ class BaseSignableCommand extends Command
     }
 }
 
+#[AsCommand(name: 'signal')]
 class SignableCommand extends BaseSignableCommand implements SignalableCommandInterface
 {
-    protected static $defaultName = 'signal';
-
     public function getSubscribedSignals(): array
     {
         return SignalRegistry::isSupported() ? [\SIGUSR1] : [];
